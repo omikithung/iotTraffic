@@ -29,11 +29,11 @@ WebSocketsServer websocket(81);
 const char* ssid = "Magnifico";
 const char* password = "dragonLore";
 
+bool directionBoth = true, directionRtoL=false, directionLtoR=false;
+
 //this synax treat as tring literal value
 //PROGMEM is the flash
 char homePage[] PROGMEM = R"=====(
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -358,10 +358,14 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       USE_SERIAL.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
       
       Serial.printf("[%u] connected from...", num);
-      Serial.println(" http://"+ip.toString());
+      Serial.println("http://"+ip.toString());
 
 			// send message to client
 			websocket.sendTXT(num, "Connected to websocket :)");
+
+      //on changes in event
+      entry();
+
     }
     break;
     
@@ -373,7 +377,37 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       // webSocket.broadcastTXT("message here");
       String dataReceived = String( (char*) (payload) );
       Serial.println(dataReceived);
+
+      if(dataReceived=="selfTrafficFlow") {
+        directionBoth = true;
+        directionRtoL=false;
+        directionLtoR=false;
+      }
+      else if(dataReceived=="rightToLeft") {
+        directionBoth = false;
+        directionRtoL=true;
+        directionLtoR=false;
+      }
+      else if(dataReceived=="leftToRight") {
+        directionBoth = false;
+        directionRtoL=false;
+        directionLtoR=true;
+      }
     break;
+  }
+
+}
+
+void entry() {
+
+  if(directionBoth == true) {
+    websocket.broadcastTXT("selfTrafficFlow");
+  }
+  else if (directionRtoL==true) {
+    websocket.broadcastTXT("rightToLeft");
+  }
+  else if(directionLtoR==false) {
+    websocket.broadcastTXT("leftToRight");
   }
 
 }
