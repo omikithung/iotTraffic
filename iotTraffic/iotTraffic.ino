@@ -24,16 +24,20 @@ ESP32 WROOM DA
 AsyncWebServer server(80);
 WebSocketsServer websocket(81);
 
+Ticker timer;
 #define USE_SERIAL Serial1
 
 const char* ssid = "Magnifico";
 const char* password = "dragonLore";
 
-bool directionBoth = true, directionRtoL=false, directionLtoR=false;
+// bool direction[itemsNo] = {directionBoth, directionRtoL, directionLtoR};
+bool direction[3] = {true, false, false};
 
 //this synax treat as tring literal value
 //PROGMEM is the flash
 char homePage[] PROGMEM = R"=====(
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -267,8 +271,8 @@ char homePage[] PROGMEM = R"=====(
         
         var serverCon = new WebSocket('ws://'+location.hostname+':81/');
         serverCon.onmessage = function(event) {
-            var fullData = event.data;
-            console.log(fullData);
+            var data = event.data;
+            adjustUI(data);
         }
         let leftRed = document.querySelector('#leftRed');
         let leftGreen = document.querySelector('#leftGreen');
@@ -284,6 +288,19 @@ char homePage[] PROGMEM = R"=====(
         let value = ""
         function setTravelDirect(value="selfTrafficFlow") {
             if(value==="leftToRight") {
+                serverCon.send("leftToRight");
+            }
+            else if(value==="rightToLeft") {
+                serverCon.send("rightToLeft");
+            }
+            else if(value==="selfTrafficFlow") {
+                serverCon.send("selfTrafficFlow");
+            }
+            
+        }
+
+        function adjustUI(value) {
+            if(value==="leftToRight") {
                 //for lights
                 leftRed.classList.remove("lightColorRed");
                 leftGreen.classList.add("lightColorGreen");
@@ -296,10 +313,11 @@ char homePage[] PROGMEM = R"=====(
                 leftToRightB.classList.add("controlBtn");
                 rightToLeftB.classList.remove("controlBtn");
                 selfTrafficFlowB.classList.remove("controlBtn");
-                serverCon.send("leftToRight");
+                leftToRightB.disabled = true;
+                rightToLeftB.disabled = false;
+                selfTrafficFlowB.disabled = false;
             }
-            
-           else if(value==="rightToLeft") {
+            else if(value==="rightToLeft") {
                 //for lights
                 leftRed.classList.add("lightColorRed");
                 leftGreen.classList.remove("lightColorGreen");
@@ -312,10 +330,10 @@ char homePage[] PROGMEM = R"=====(
                 leftToRightB.classList.remove("controlBtn");
                 rightToLeftB.classList.add("controlBtn");
                 selfTrafficFlowB.classList.remove("controlBtn");
-                serverCon.send("rightToLeft");
+                leftToRightB.disabled = false;
+                rightToLeftB.disabled = true;
+                selfTrafficFlowB.disabled = false;
             }
-            
-            
             else if(value==="selfTrafficFlow") {
                 //for lights
                 leftRed.classList.remove("lightColorRed");
@@ -329,12 +347,12 @@ char homePage[] PROGMEM = R"=====(
                 leftToRightB.classList.remove("controlBtn");
                 rightToLeftB.classList.remove("controlBtn");
                 selfTrafficFlowB.classList.add("controlBtn");
-                serverCon.send("selfTrafficFlow");
-
+                leftToRightB.disabled = false;
+                rightToLeftB.disabled = false;
+                selfTrafficFlowB.disabled = true;
             }
             
         }
-
     </script>
  
 </body>
@@ -363,9 +381,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 			// send message to client
 			websocket.sendTXT(num, "Connected to websocket :)");
 
-      //on changes in event
-      entry();
-
     }
     break;
     
@@ -379,19 +394,19 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       Serial.println(dataReceived);
 
       if(dataReceived=="selfTrafficFlow") {
-        directionBoth = true;
-        directionRtoL=false;
-        directionLtoR=false;
+        direction[0] = true;
+        direction[1]=false;
+        direction[2]=false;
       }
       else if(dataReceived=="rightToLeft") {
-        directionBoth = false;
-        directionRtoL=true;
-        directionLtoR=false;
+        direction[0] = false;
+        direction[1]=true;
+        direction[2]=false;
       }
       else if(dataReceived=="leftToRight") {
-        directionBoth = false;
-        directionRtoL=false;
-        directionLtoR=true;
+        direction[0] = false;
+        direction[1]=false;
+        direction[2]=true;
       }
     break;
   }
@@ -400,13 +415,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
 void entry() {
 
-  if(directionBoth == true) {
+  if(direction[0] == true) {
     websocket.broadcastTXT("selfTrafficFlow");
   }
-  else if (directionRtoL==true) {
+  else if (direction[1]==true) {
     websocket.broadcastTXT("rightToLeft");
   }
-  else if(directionLtoR==false) {
+  else if(direction[2]==true) {
     websocket.broadcastTXT("leftToRight");
   }
 
@@ -434,6 +449,7 @@ void setup() {
     server.begin();
     websocket.begin();
     websocket.onEvent(webSocketEvent);
+    timer.attach(0.1,entry);
 }
 
 void loop() {

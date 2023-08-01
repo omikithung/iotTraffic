@@ -231,8 +231,8 @@
         
         var serverCon = new WebSocket('ws://'+location.hostname+':81/');
         serverCon.onmessage = function(event) {
-            var fullData = event.data;
-            console.log(fullData);
+            var data = event.data;
+            adjustUI(data);
         }
         let leftRed = document.querySelector('#leftRed');
         let leftGreen = document.querySelector('#leftGreen');
@@ -248,6 +248,19 @@
         let value = ""
         function setTravelDirect(value="selfTrafficFlow") {
             if(value==="leftToRight") {
+                serverCon.send("leftToRight");
+            }
+            else if(value==="rightToLeft") {
+                serverCon.send("rightToLeft");
+            }
+            else if(value==="selfTrafficFlow") {
+                serverCon.send("selfTrafficFlow");
+            }
+            
+        }
+
+        function adjustUI(value) {
+            if(value==="leftToRight") {
                 //for lights
                 leftRed.classList.remove("lightColorRed");
                 leftGreen.classList.add("lightColorGreen");
@@ -260,10 +273,11 @@
                 leftToRightB.classList.add("controlBtn");
                 rightToLeftB.classList.remove("controlBtn");
                 selfTrafficFlowB.classList.remove("controlBtn");
-                serverCon.send("leftToRight");
+                leftToRightB.disabled = true;
+                rightToLeftB.disabled = false;
+                selfTrafficFlowB.disabled = false;
             }
-            
-           else if(value==="rightToLeft") {
+            else if(value==="rightToLeft") {
                 //for lights
                 leftRed.classList.add("lightColorRed");
                 leftGreen.classList.remove("lightColorGreen");
@@ -276,10 +290,10 @@
                 leftToRightB.classList.remove("controlBtn");
                 rightToLeftB.classList.add("controlBtn");
                 selfTrafficFlowB.classList.remove("controlBtn");
-                serverCon.send("rightToLeft");
+                leftToRightB.disabled = false;
+                rightToLeftB.disabled = true;
+                selfTrafficFlowB.disabled = false;
             }
-            
-            
             else if(value==="selfTrafficFlow") {
                 //for lights
                 leftRed.classList.remove("lightColorRed");
@@ -293,12 +307,12 @@
                 leftToRightB.classList.remove("controlBtn");
                 rightToLeftB.classList.remove("controlBtn");
                 selfTrafficFlowB.classList.add("controlBtn");
-                serverCon.send("selfTrafficFlow");
-
+                leftToRightB.disabled = false;
+                rightToLeftB.disabled = false;
+                selfTrafficFlowB.disabled = true;
             }
             
         }
-
     </script>
  
 </body>
