@@ -37,8 +37,6 @@ bool direction[3] = {true, false, false};
 //PROGMEM is the flash
 char homePage[] PROGMEM = R"=====(
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -105,27 +103,9 @@ char homePage[] PROGMEM = R"=====(
         margin-top: auto;
         padding-bottom: 8px;
     }
-    .hold > div {
+    .pathContainer {
         display: flex;
         flex-direction: column;
-    }
-    .hold > div:first-child {
-        flex: 1;
-    }
-    .hold > div:nth-child(2) > div:first-child {
-        height: 40px;
-        background-color: rgba(0, 0, 0, 0.842);
-    }
-    .hold > div:nth-child(2) > div:nth-child(2) {
-        background-color: rgba(75, 73, 73, 0.719);
-        height: 100%;
-        margin-top: 10px;
-        display: flex;
-        flex-direction: column;
-        vertical-align: middle;
-        justify-content: center;
-    }
-    .hold > div:nth-child(3) {
         flex: 1;
     }
    .path{
@@ -135,6 +115,36 @@ char homePage[] PROGMEM = R"=====(
         display: flex;
         justify-content: center;
         background-color: rgba(0, 0, 0, 0.74);
+    }
+    .pathMark {
+        border: 1px dashed rgb(131, 130, 130);
+        width: 100%;
+        align-self: center;
+        margin: 0 30px;
+    }
+    .gate {
+        display: flex;
+        flex-direction: column;
+        /* border: 1px solid red; */
+        height: 100%;
+    }
+    .gateDecorate {
+        display: flex;
+        flex-direction: column;
+        padding: 0 10px;
+        /* border: 1px solid red; */
+        height: 100%;
+        justify-content: center;
+        background-color: rgb(151, 63, 104);
+        color: antiquewhite;
+    }
+    .gateStatus {
+        height: 62px;
+        display: flex;
+        /* border: 1px solid red; */
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
     }
     .moveTowardsLeft {
         position: absolute;
@@ -173,11 +183,6 @@ char homePage[] PROGMEM = R"=====(
             visibility: visible; 
             opacity: 0;
         }
-    }
-    span {
-        font-size: 60px;
-        color: antiquewhite;
-        transform: rotateY(45deg);
     }
     .moveTowardsLeftAnimate {
         animation: moveTowardsLeft 2s ease infinite;
@@ -222,7 +227,8 @@ char homePage[] PROGMEM = R"=====(
     <div class="div1" >
         <div class="contain">
            <div class="hold">
-               <div>
+                <!-- path 1 -->
+               <div class="pathContainer">
                    <div class="head">
                        <div>
                            <button id="leftRed" class="lightIndicate"></button>
@@ -230,20 +236,24 @@ char homePage[] PROGMEM = R"=====(
                        </div>
                    </div>
                    <div class="path">
-                        <div class="moveTowardsRight"><span>&#x1F89A;</span></div>
+                        <!-- for animated object car -->
+                        <div class="moveTowardsRight"><span>&#x1F89A</span></div>
+                        <!-- for road middle mark -->
+                        <div class="pathMark"></div>
                    </div>
                </div>
-               <div>
-                   <div>
-                       <div class="directPoint" id="pointLeft">&#x2192;</div>
-                       <div class="directPoint" id="pointRight">&#x2190;</div>
-                   </div>
-                   <div>
-                       <div class="directPoint" id="pointLeft">&#x2192;</div>
-                       <div class="directPoint" id="pointRight">&#x2190;</div>
-                   </div>
+               <!-- Gate/Traffic point -->
+               <div class="gate">
+                <div class="gateStatus">
+                    <div class="directPoint" id="pointLeft">&#x2192;</div>
+                    <div class="directPoint" id="pointRight">&#x2190;</div>
+                </div>
+                   <div class="gateDecorate">
+                        <span>G</span><span>A</span><span>T</span><span>E</span>
+                    </div>
                </div>
-               <div>
+               <!-- path 2 -->
+               <div class="pathContainer">
                    <div class="head">
                        <div>
                            <button id="rightRed" class="lightIndicate"></button>
@@ -251,7 +261,10 @@ char homePage[] PROGMEM = R"=====(
                        </div>
                    </div>
                     <div class="path">
+                        <!-- for animated object car -->
                         <div class="moveTowardsLeft"><span>&#x1F898;</span></div>        
+                        <!-- for road middle mark -->
+                        <div class="pathMark"></div>
                     </div>
 
                </div>
@@ -356,7 +369,6 @@ char homePage[] PROGMEM = R"=====(
     </script>
  
 </body>
-
 </html>
 
 )=====";
