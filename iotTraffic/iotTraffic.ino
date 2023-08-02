@@ -1,8 +1,4 @@
-//
-// A simple server implementation showing how to:
-//  * serve static messages
-//  * read GET and POST parameters
-//  * handle missing pages / 404s
+
 /*
 esp board 2.0.9 version has problems
 
@@ -36,6 +32,7 @@ bool direction[3] = {true, false, false};
 //this synax treat as tring literal value
 //PROGMEM is the flash
 char homePage[] PROGMEM = R"=====(
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -146,9 +143,14 @@ char homePage[] PROGMEM = R"=====(
         align-items: center;
         justify-content: space-around;
     }
+    .moveTowardsLeft span, .moveTowardsRight span {
+        font-size: 40px;
+        color:rgb(219, 135, 174);
+        background-color: rgb(134, 46, 87);
+    }
     .moveTowardsLeft {
         position: absolute;
-        top: 50%;
+        top: 45%;
         left: 100%;
         transform: translate(-45%,-45%);
         z-index:1;
@@ -156,11 +158,11 @@ char homePage[] PROGMEM = R"=====(
     }
     .moveTowardsRight {
         position: absolute;
-        top: 50%;
+        top: 45%;
         left: 0;
         transform: translate(-45%,-45%);
         z-index:1;
-        visibility: hidden;
+        visibility: hidden; 
     }
     @keyframes moveTowardsLeft {
         from {
@@ -374,7 +376,7 @@ char homePage[] PROGMEM = R"=====(
 )=====";
 
 void notFound(AsyncWebServerRequest *request) {
-    request->send(404, "text/plain", "Not found");
+  request->send(404, "text/plain", "Not found");
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
@@ -429,12 +431,24 @@ void entry() {
 
   if(direction[0] == true) {
     websocket.broadcastTXT("selfTrafficFlow");
+    digitalWrite(18,LOW);
+    digitalWrite(19,LOW);
+    digitalWrite(32,LOW);
+    digitalWrite(33,LOW);
   }
   else if (direction[1]==true) {
     websocket.broadcastTXT("rightToLeft");
+    digitalWrite(18,LOW);
+    digitalWrite(19,HIGH);
+    digitalWrite(32,LOW);
+    digitalWrite(33,HIGH);
   }
   else if(direction[2]==true) {
     websocket.broadcastTXT("leftToRight");
+    digitalWrite(18,HIGH);
+    digitalWrite(19,LOW);
+    digitalWrite(32,HIGH);
+    digitalWrite(33,LOW);
   }
 
 }
@@ -442,6 +456,11 @@ void entry() {
 void setup() {
 
     Serial.begin(115200);
+    pinMode(18,OUTPUT);
+    pinMode(19,OUTPUT);
+    pinMode(32,OUTPUT);
+    pinMode(33,OUTPUT);
+
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
